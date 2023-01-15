@@ -26,6 +26,7 @@ SUF=".zip"
 
 
 get-versions() {
+    # download all bios versions if we haven't done so already
     local input; input="$*"
     local NUM_ARCHIVES="$(c=0; for i in *; do if [[ "$i" =~ .*\.zip ]]; then c="$((c + 1))"; fi; done; echo "$c")"
 
@@ -38,6 +39,7 @@ get-versions() {
 }
 
 unarchive() {
+    # extract all bios versions, but leave window executables
     local input; input="$*"
     for ARCHIVE in $input; do
 	unzip -qq "$ARCHIVE" -x "*.EXE" 2>&- &
@@ -46,13 +48,17 @@ unarchive() {
 }
 
 _print-name() {
+    # prints a name like 00.rom
+    local -i n; n="$2"
+    local a   ; a="$1"
+    
     printf "%02d.${2}" "${1}"
 }
 
 rename() {
+    # renames all bios updates like 00.rom
     local input c new
-    input="$*"
-    c=0 
+    input="$*"; c=0 
     for old_name in $input; do
 	if [[ $old_name =~ .*\.ROM ]]; then
 	    new_name=$(_print-name $c rom)
@@ -63,6 +69,10 @@ rename() {
 }
 
 gen-patched() {
+    # creates and applies patch between A.a and B, resulting in A.b
+    # creates and applies patch between A.b and C, resulting in A.c
+    # ...
+    # creates and applies patch between A.m and N, resulting in A.n
     for ((i=0;i<14;i++)); do
 	local ii old_rom new_rom patch
         ii=$((i + 1))
@@ -83,10 +93,12 @@ gen-patched() {
 (
     mkdir "$DIR" 2>&- || :
     cd "$DIR" || exit
+    # cleanup directory
     rm ./*.{rom,ROM,patch} 2>&- || :
-
+    # if no archives download them
     get-versions "${VERSIONS[@]}"    
     unarchive ./*
     rename ./*
+    # incrementally patch base bios
     gen-patched
 )
