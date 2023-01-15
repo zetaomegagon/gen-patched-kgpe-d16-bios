@@ -11,4 +11,4 @@ This script does the following:
 - renames the bioses to numbers padded to two places
 - incrementally patches the earlies bios with the next bios
 - incrementally applies this patch to the earliest bios
-- continues until the most recent bios. see the description of `gen-patched` below.
+- continues until the most recent bios, and produces `patched-final.rom`
